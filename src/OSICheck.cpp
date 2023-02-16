@@ -58,20 +58,20 @@ ofstream COSMPDummySensor::private_log_file;
 void* DecodeIntegerToPointer(fmi2Integer hi, fmi2Integer lo)
 {
 #if PTRDIFF_MAX == INT64_MAX
-    union Addrconv
+  union Addrconv
+  {
+    struct
     {
-        struct
-        {
-            int lo;
-            int hi;
-        } base;
-        unsigned long long address;
-    } myaddr;
-    myaddr.base.lo = lo;
-    myaddr.base.hi = hi;
-    return reinterpret_cast<void*>(myaddr.address);
+      int lo;
+      int hi;
+    } base;
+    unsigned long long address;
+  } myaddr;
+  myaddr.base.lo = lo;
+  myaddr.base.hi = hi;
+  return reinterpret_cast<void*>(myaddr.address);
 #elif PTRDIFF_MAX == INT32_MAX
-    return reinterpret_cast<void*>(lo);
+  return reinterpret_cast<void*>(lo);
 #else
 #error "Cannot determine 32bit or 64bit environment!"
 #endif
@@ -80,21 +80,21 @@ void* DecodeIntegerToPointer(fmi2Integer hi, fmi2Integer lo)
 void EncodePointerToInteger(const void* ptr, fmi2Integer& hi, fmi2Integer& lo)
 {
 #if PTRDIFF_MAX == INT64_MAX
-    union Addrconv
+  union Addrconv
+  {
+    struct
     {
-        struct
-        {
-            int lo;
-            int hi;
-        } base;
-        unsigned long long address;
-    } myaddr;
-    myaddr.address = reinterpret_cast<unsigned long long>(ptr);
-    hi = myaddr.base.hi;
-    lo = myaddr.base.lo;
+      int lo;
+      int hi;
+    } base;
+    unsigned long long address;
+  } myaddr;
+  myaddr.address = reinterpret_cast<unsigned long long>(ptr);
+  hi = myaddr.base.hi;
+  lo = myaddr.base.lo;
 #elif PTRDIFF_MAX == INT32_MAX
-    hi = 0;
-    lo = reinterpret_cast<int>(ptr);
+  hi = 0;
+  lo = reinterpret_cast<int>(ptr);
 #else
 #error "Cannot determine 32bit or 64bit environment!"
 #endif
@@ -102,34 +102,34 @@ void EncodePointerToInteger(const void* ptr, fmi2Integer& hi, fmi2Integer& lo)
 
 bool OSICheck::GetFmiSensorDataIn(osi3::SensorData& data)
 {
-    if (integer_vars_[FMI_INTEGER_SENSORDATA_IN_SIZE_IDX] > 0)
-    {
-        void* buffer = DecodeIntegerToPointer(integer_vars_[FMI_INTEGER_SENSORDATA_IN_BASEHI_IDX], integer_vars_[FMI_INTEGER_SENSORDATA_IN_BASELO_IDX]);
-        NormalLog("OSMP", "Got %08X %08X, reading from %p ...", integer_vars_[FMI_INTEGER_SENSORDATA_IN_BASEHI_IDX], integer_vars_[FMI_INTEGER_SENSORDATA_IN_BASELO_IDX], buffer);
-        data.ParseFromArray(buffer, integer_vars_[FMI_INTEGER_SENSORDATA_IN_SIZE_IDX]);
-        return true;
-    }
-    return false;
+  if (integer_vars_[FMI_INTEGER_SENSORDATA_IN_SIZE_IDX] > 0)
+  {
+    void* buffer = DecodeIntegerToPointer(integer_vars_[FMI_INTEGER_SENSORDATA_IN_BASEHI_IDX], integer_vars_[FMI_INTEGER_SENSORDATA_IN_BASELO_IDX]);
+    NormalLog("OSMP", "Got %08X %08X, reading from %p ...", integer_vars_[FMI_INTEGER_SENSORDATA_IN_BASEHI_IDX], integer_vars_[FMI_INTEGER_SENSORDATA_IN_BASELO_IDX], buffer);
+    data.ParseFromArray(buffer, integer_vars_[FMI_INTEGER_SENSORDATA_IN_SIZE_IDX]);
+    return true;
+  }
+  return false;
 }
 
 void OSICheck::SetFmiSensorDataOut(const osi3::SensorData& data)
 {
-    data.SerializeToString(current_output_buffer_);
-    EncodePointerToInteger(current_output_buffer_->data(), integer_vars_[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX], integer_vars_[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX]);
-    integer_vars_[FMI_INTEGER_SENSORDATA_OUT_SIZE_IDX] = (fmi2Integer)current_output_buffer_->length();
-    NormalLog("OSMP",
-              "Providing %08X %08X, writing from %p ...",
-              integer_vars_[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX],
-              integer_vars_[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX],
-              current_output_buffer_->data());
-    swap(current_output_buffer_, last_output_buffer_);
+  data.SerializeToString(current_output_buffer_);
+  EncodePointerToInteger(current_output_buffer_->data(), integer_vars_[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX], integer_vars_[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX]);
+  integer_vars_[FMI_INTEGER_SENSORDATA_OUT_SIZE_IDX] = (fmi2Integer)current_output_buffer_->length();
+  NormalLog("OSMP",
+            "Providing %08X %08X, writing from %p ...",
+            integer_vars_[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX],
+            integer_vars_[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX],
+            current_output_buffer_->data());
+  swap(current_output_buffer_, last_output_buffer_);
 }
 
 void OSICheck::ResetFmiSensorDataOut()
 {
-    integer_vars_[FMI_INTEGER_SENSORDATA_OUT_SIZE_IDX] = 0;
-    integer_vars_[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX] = 0;
-    integer_vars_[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX] = 0;
+  integer_vars_[FMI_INTEGER_SENSORDATA_OUT_SIZE_IDX] = 0;
+  integer_vars_[FMI_INTEGER_SENSORDATA_OUT_BASEHI_IDX] = 0;
+  integer_vars_[FMI_INTEGER_SENSORDATA_OUT_BASELO_IDX] = 0;
 }
 
 /*
@@ -138,31 +138,31 @@ void OSICheck::ResetFmiSensorDataOut()
 
 fmi2Status OSICheck::DoInit()
 {
-    /* Booleans */
-    for (int& boolean_var : boolean_vars_)
-    {
-        boolean_var = fmi2False;
-    }
+  /* Booleans */
+  for (int& boolean_var : boolean_vars_)
+  {
+    boolean_var = fmi2False;
+  }
 
-    /* Integers */
-    for (int& integer_var : integer_vars_)
-    {
-        integer_var = 0;
-    }
+  /* Integers */
+  for (int& integer_var : integer_vars_)
+  {
+    integer_var = 0;
+  }
 
-    /* Reals */
-    for (double& real_var : real_vars_)
-    {
-        real_var = 0.0;
-    }
+  /* Reals */
+  for (double& real_var : real_vars_)
+  {
+    real_var = 0.0;
+  }
 
-    /* Strings */
-    for (auto& string_var : string_vars_)
-    {
-        string_var = "";
-    }
+  /* Strings */
+  for (auto& string_var : string_vars_)
+  {
+    string_var = "";
+  }
 
-    return fmi2OK;
+  return fmi2OK;
 }
 
 /*fmi2Status OSICheck::DoStart(fmi2Boolean toleranceDefined, fmi2Real tolerance, fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime)
@@ -172,52 +172,136 @@ fmi2Status OSICheck::DoInit()
 
 fmi2Status OSICheck::DoEnterInitializationMode()
 {
-    return fmi2OK;
+  expected_osi_fields_.insert("moving_object");
+  expected_osi_fields_.insert("moving_object.base");
+  expected_osi_fields_.insert("moving_object.base.position");
+  expected_osi_fields_.insert("moving_object.base.orientation");
+  expected_osi_fields_.insert("moving_object.base.velocity");
+  expected_osi_fields_.insert("moving_object.base.acceleration");
+  expected_osi_fields_.insert("moving_object.base.orientation_rate");
+  expected_osi_fields_.insert("moving_object.base.orientation_acceleration");
+  expected_osi_fields_.insert("moving_object.base.base_polygon");
+  return fmi2OK;
 }
 
 fmi2Status OSICheck::DoExitInitializationMode()
 {
-    return fmi2OK;
+  return fmi2OK;
 }
 
 fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real communication_step_size)
 {
-    osi3::SensorData sensor_data_in;
-    osi3::SensorData sensor_data_out;
-    double time = current_communication_point + communication_step_size;
-    NormalLog("OSI", "Calculating Sensor at %f for %f (step size %f)", current_communication_point, time, communication_step_size);
-    if (GetFmiSensorDataIn(sensor_data_in))
+  osi3::SensorData sensor_data_in;
+  osi3::SensorData sensor_data_out;
+  double time = current_communication_point + communication_step_size;
+  NormalLog("OSI", "Calculating Sensor at %f for %f (step size %f)", current_communication_point, time, communication_step_size);
+  if (GetFmiSensorDataIn(sensor_data_in))
+  {
+    // TODO: Implement OSI field checks
+    if (!sensor_data_in.moving_object().empty() && expected_osi_fields_.find("moving_object") != expected_osi_fields_.end())
     {
-
-        // TODO: Implement OSI field checks
-        for (int object_idx = 0; object_idx < sensor_data_in.moving_object_size(); ++object_idx)
+      for (const auto& current_check : expected_osi_fields_)
+      {
+        if (current_check == "moving_object.base")
         {
-            std::cout << "Moving Object x-Position: " << sensor_data_in.moving_object(object_idx).base().position().x() << std::endl;
+          if (!sensor_data_in.moving_object(0).has_base())
+          {
+            std::cerr << "No moving_object.base" << std::endl;
+          }
         }
-
-        /* Clear Output */
-        sensor_data_out.Clear();
-        sensor_data_out.CopyFrom(sensor_data_in);
-
-        /* Serialize */
-        SetFmiSensorDataOut(sensor_data_out);
-        SetFmiValid(1);
-        SetFmiCount(sensor_data_out.moving_object_size());
+        else if (current_check == "moving_object.base.dimension")
+        {
+          if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_dimension())
+          {
+            std::cerr << "No moving_object.base.dimension" << std::endl;
+          }
+        }
+        else if (current_check == "moving_object.base.position")
+        {
+          if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_position())
+          {
+            std::cerr << "No moving_object.base.position" << std::endl;
+          }
+        }
+        else if (current_check == "moving_object.base.orientation")
+        {
+          if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_orientation())
+          {
+            std::cerr << "No moving_object.base.orientation" << std::endl;
+          }
+        }
+        else if (current_check == "moving_object.base.velocity")
+        {
+          if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_velocity())
+          {
+            std::cerr << "No moving_object.base.velocity" << std::endl;
+          }
+        }
+        else if (current_check == "moving_object.base.acceleration")
+        {
+          if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_acceleration())
+          {
+            std::cerr << "No moving_object.base.acceleration" << std::endl;
+          }
+        }
+        else if (current_check == "moving_object.base.orientation_rate")
+        {
+          if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_orientation_rate())
+          {
+            std::cerr << "No moving_object.base.orientation_rate" << std::endl;
+          }
+        }
+        else if (current_check == "moving_object.base.orientation_acceleration")
+        {
+          if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_orientation_acceleration())
+          {
+            std::cerr << "No moving_object.base.orientation_acceleration" << std::endl;
+          }
+        }
+        else if (current_check == "moving_object.base.base_polygon")
+        {
+          if (sensor_data_in.moving_object(0).has_base() && sensor_data_in.moving_object(0).base().base_polygon().empty())
+          {
+            std::cerr << "No moving_object.base.base_polygon" << std::endl;
+          }
+        }
+        else
+        {
+          std::cerr << "No check for " << current_check << " defined." << std::endl;
+        }
+      }
     }
     else
     {
-        /* We have no valid input, so no valid output */
-        NormalLog("OSI", "No valid input, therefore providing no valid output.");
-        ResetFmiSensorDataOut();
-        SetFmiValid(0);
-        SetFmiCount(0);
+      if (expected_osi_fields_.find("moving_object") != expected_osi_fields_.end())
+      {
+        std::cerr << "No moving objects in sensor data" << std::endl;
+      }
     }
-    return fmi2OK;
+
+    /* Clear Output */
+    sensor_data_out.Clear();
+    sensor_data_out.CopyFrom(sensor_data_in);
+
+    /* Serialize */
+    SetFmiSensorDataOut(sensor_data_out);
+    SetFmiValid(1);
+    SetFmiCount(sensor_data_out.moving_object_size());
+  }
+  else
+  {
+    /* We have no valid input, so no valid output */
+    NormalLog("OSI", "No valid input, therefore providing no valid output.");
+    ResetFmiSensorDataOut();
+    SetFmiValid(0);
+    SetFmiCount(0);
+  }
+  return fmi2OK;
 }
 
 fmi2Status OSICheck::DoTerm()
 {
-    return fmi2OK;
+  return fmi2OK;
 }
 
 /*void OSICheck::DoFree()
@@ -247,49 +331,49 @@ OSICheck::OSICheck(fmi2String theinstance_name,
       current_output_buffer_(new string()),
       last_output_buffer_(new string())
 {
-    logging_categories_.clear();
-    logging_categories_.insert("FMI");
-    logging_categories_.insert("OSMP");
-    logging_categories_.insert("OSI");
+  logging_categories_.clear();
+  logging_categories_.insert("FMI");
+  logging_categories_.insert("OSMP");
+  logging_categories_.insert("OSI");
 }
 
 OSICheck::~OSICheck()
 {
-    delete current_output_buffer_;
-    delete last_output_buffer_;
+  delete current_output_buffer_;
+  delete last_output_buffer_;
 }
 
 fmi2Status OSICheck::SetDebugLogging(fmi2Boolean thelogging_on, size_t n_categories, const fmi2String categories[])
 {
-    FmiVerboseLog("fmi2SetDebugLogging(%s)", thelogging_on != 0 ? "true" : "false");
-    logging_on_ = thelogging_on != 0;
-    if ((categories != nullptr) && (n_categories > 0))
+  FmiVerboseLog("fmi2SetDebugLogging(%s)", thelogging_on != 0 ? "true" : "false");
+  logging_on_ = thelogging_on != 0;
+  if ((categories != nullptr) && (n_categories > 0))
+  {
+    logging_categories_.clear();
+    for (size_t i = 0; i < n_categories; i++)
     {
-        logging_categories_.clear();
-        for (size_t i = 0; i < n_categories; i++)
-        {
-            if (0 == strcmp(categories[i], "FMI"))
-            {
-                logging_categories_.insert("FMI");
-            }
-            else if (0 == strcmp(categories[i], "OSMP"))
-            {
-                logging_categories_.insert("OSMP");
-            }
-            else if (0 == strcmp(categories[i], "OSI"))
-            {
-                logging_categories_.insert("OSI");
-            }
-        }
-    }
-    else
-    {
-        logging_categories_.clear();
+      if (0 == strcmp(categories[i], "FMI"))
+      {
         logging_categories_.insert("FMI");
+      }
+      else if (0 == strcmp(categories[i], "OSMP"))
+      {
         logging_categories_.insert("OSMP");
+      }
+      else if (0 == strcmp(categories[i], "OSI"))
+      {
         logging_categories_.insert("OSI");
+      }
     }
-    return fmi2OK;
+  }
+  else
+  {
+    logging_categories_.clear();
+    logging_categories_.insert("FMI");
+    logging_categories_.insert("OSMP");
+    logging_categories_.insert("OSI");
+  }
+  return fmi2OK;
 }
 
 fmi2Component OSICheck::Instantiate(fmi2String instance_name,
@@ -300,198 +384,198 @@ fmi2Component OSICheck::Instantiate(fmi2String instance_name,
                                     fmi2Boolean visible,
                                     fmi2Boolean logging_on)
 {
-    auto* myc = new OSICheck(instance_name, fmu_type, fmu_guid, fmu_resource_location, functions, visible, logging_on);
+  auto* myc = new OSICheck(instance_name, fmu_type, fmu_guid, fmu_resource_location, functions, visible, logging_on);
 
-    FmiVerboseLogGlobal(R"(fmi2Instantiate("%s",%d,"%s","%s","%s",%d,%d) = %p)",
-                        instance_name,
-                        fmu_type,
-                        fmu_guid,
-                        (fmu_resource_location != nullptr) ? fmu_resource_location : "<NULL>",
-                        "FUNCTIONS",
-                        visible,
-                        logging_on,
-                        myc);
-    return (fmi2Component)myc;
+  FmiVerboseLogGlobal(R"(fmi2Instantiate("%s",%d,"%s","%s","%s",%d,%d) = %p)",
+                      instance_name,
+                      fmu_type,
+                      fmu_guid,
+                      (fmu_resource_location != nullptr) ? fmu_resource_location : "<NULL>",
+                      "FUNCTIONS",
+                      visible,
+                      logging_on,
+                      myc);
+  return (fmi2Component)myc;
 }
 
 fmi2Status OSICheck::EnterInitializationMode()
 {
-    FmiVerboseLog("fmi2EnterInitializationMode()");
-    return DoEnterInitializationMode();
+  FmiVerboseLog("fmi2EnterInitializationMode()");
+  return DoEnterInitializationMode();
 }
 
 fmi2Status OSICheck::ExitInitializationMode()
 {
-    FmiVerboseLog("fmi2ExitInitializationMode()");
-    simulation_started_ = true;
-    return DoExitInitializationMode();
+  FmiVerboseLog("fmi2ExitInitializationMode()");
+  simulation_started_ = true;
+  return DoExitInitializationMode();
 }
 
 fmi2Status OSICheck::DoStep(fmi2Real current_communication_point, fmi2Real communication_step_size, fmi2Boolean no_set_fmu_state_prior_to_current_pointfmi2_component)
 {
-    FmiVerboseLog("fmi2DoStep(%g,%g,%d)", current_communication_point, communication_step_size, no_set_fmu_state_prior_to_current_pointfmi2_component);
-    return DoCalc(current_communication_point, communication_step_size);
+  FmiVerboseLog("fmi2DoStep(%g,%g,%d)", current_communication_point, communication_step_size, no_set_fmu_state_prior_to_current_pointfmi2_component);
+  return DoCalc(current_communication_point, communication_step_size);
 }
 
 fmi2Status OSICheck::Terminate()
 {
-    FmiVerboseLog("fmi2Terminate()");
-    return DoTerm();
+  FmiVerboseLog("fmi2Terminate()");
+  return DoTerm();
 }
 
 fmi2Status OSICheck::Reset()
 {
-    FmiVerboseLog("fmi2Reset()");
+  FmiVerboseLog("fmi2Reset()");
 
-    // DoFree();
-    simulation_started_ = false;
-    return DoInit();
+  // DoFree();
+  simulation_started_ = false;
+  return DoInit();
 }
 
 void OSICheck::FreeInstance()
 {
-    FmiVerboseLog("fmi2FreeInstance()");
-    // DoFree();
+  FmiVerboseLog("fmi2FreeInstance()");
+  // DoFree();
 }
 
 fmi2Status OSICheck::GetReal(const fmi2ValueReference vr[], size_t nvr, fmi2Real value[])
 {
-    FmiVerboseLog("fmi2GetReal(...)");
-    for (size_t i = 0; i < nvr; i++)
+  FmiVerboseLog("fmi2GetReal(...)");
+  for (size_t i = 0; i < nvr; i++)
+  {
+    if (vr[i] < FMI_REAL_VARS)
     {
-        if (vr[i] < FMI_REAL_VARS)
-        {
-            value[i] = real_vars_[vr[i]];
-        }
-        else
-        {
-            return fmi2Error;
-        }
+      value[i] = real_vars_[vr[i]];
     }
-    return fmi2OK;
+    else
+    {
+      return fmi2Error;
+    }
+  }
+  return fmi2OK;
 }
 
 fmi2Status OSICheck::GetInteger(const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[])
 {
-    FmiVerboseLog("fmi2GetInteger(...)");
-    // bool need_refresh = !simulation_started_;
-    for (size_t i = 0; i < nvr; i++)
+  FmiVerboseLog("fmi2GetInteger(...)");
+  // bool need_refresh = !simulation_started_;
+  for (size_t i = 0; i < nvr; i++)
+  {
+    if (vr[i] < FMI_INTEGER_VARS)
     {
-        if (vr[i] < FMI_INTEGER_VARS)
-        {
-            /*if (need_refresh && (vr[i] == FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASEHI_IDX || vr[i] == FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASELO_IDX || vr[i] ==
-            FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_SIZE_IDX)) { refresh_fmi_sensor_view_config_request(); need_refresh = false;s
-            }*/
-            value[i] = integer_vars_[vr[i]];
-        }
-        else
-        {
-            return fmi2Error;
-        }
+      /*if (need_refresh && (vr[i] == FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASEHI_IDX || vr[i] == FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_BASELO_IDX || vr[i] ==
+      FMI_INTEGER_SENSORVIEW_CONFIG_REQUEST_SIZE_IDX)) { refresh_fmi_sensor_view_config_request(); need_refresh = false;s
+      }*/
+      value[i] = integer_vars_[vr[i]];
     }
-    return fmi2OK;
+    else
+    {
+      return fmi2Error;
+    }
+  }
+  return fmi2OK;
 }
 
 fmi2Status OSICheck::GetBoolean(const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[])
 {
-    FmiVerboseLog("fmi2GetBoolean(...)");
-    for (size_t i = 0; i < nvr; i++)
+  FmiVerboseLog("fmi2GetBoolean(...)");
+  for (size_t i = 0; i < nvr; i++)
+  {
+    if (vr[i] < FMI_BOOLEAN_VARS)
     {
-        if (vr[i] < FMI_BOOLEAN_VARS)
-        {
-            value[i] = boolean_vars_[vr[i]];
-        }
-        else
-        {
-            return fmi2Error;
-        }
+      value[i] = boolean_vars_[vr[i]];
     }
-    return fmi2OK;
+    else
+    {
+      return fmi2Error;
+    }
+  }
+  return fmi2OK;
 }
 
 fmi2Status OSICheck::GetString(const fmi2ValueReference vr[], size_t nvr, fmi2String value[])
 {
-    FmiVerboseLog("fmi2GetString(...)");
-    for (size_t i = 0; i < nvr; i++)
+  FmiVerboseLog("fmi2GetString(...)");
+  for (size_t i = 0; i < nvr; i++)
+  {
+    if (vr[i] < FMI_STRING_VARS)
     {
-        if (vr[i] < FMI_STRING_VARS)
-        {
-            value[i] = string_vars_[vr[i]].c_str();
-        }
-        else
-        {
-            return fmi2Error;
-        }
+      value[i] = string_vars_[vr[i]].c_str();
     }
-    return fmi2OK;
+    else
+    {
+      return fmi2Error;
+    }
+  }
+  return fmi2OK;
 }
 
 fmi2Status OSICheck::SetReal(const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[])
 {
-    FmiVerboseLog("fmi2SetReal(...)");
-    for (size_t i = 0; i < nvr; i++)
+  FmiVerboseLog("fmi2SetReal(...)");
+  for (size_t i = 0; i < nvr; i++)
+  {
+    if (vr[i] < FMI_REAL_VARS)
     {
-        if (vr[i] < FMI_REAL_VARS)
-        {
-            real_vars_[vr[i]] = value[i];
-        }
-        else
-        {
-            return fmi2Error;
-        }
+      real_vars_[vr[i]] = value[i];
     }
-    return fmi2OK;
+    else
+    {
+      return fmi2Error;
+    }
+  }
+  return fmi2OK;
 }
 
 fmi2Status OSICheck::SetInteger(const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[])
 {
-    FmiVerboseLog("fmi2SetInteger(...)");
-    for (size_t i = 0; i < nvr; i++)
+  FmiVerboseLog("fmi2SetInteger(...)");
+  for (size_t i = 0; i < nvr; i++)
+  {
+    if (vr[i] < FMI_INTEGER_VARS)
     {
-        if (vr[i] < FMI_INTEGER_VARS)
-        {
-            integer_vars_[vr[i]] = value[i];
-        }
-        else
-        {
-            return fmi2Error;
-        }
+      integer_vars_[vr[i]] = value[i];
     }
-    return fmi2OK;
+    else
+    {
+      return fmi2Error;
+    }
+  }
+  return fmi2OK;
 }
 
 fmi2Status OSICheck::SetBoolean(const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[])
 {
-    FmiVerboseLog("fmi2SetBoolean(...)");
-    for (size_t i = 0; i < nvr; i++)
+  FmiVerboseLog("fmi2SetBoolean(...)");
+  for (size_t i = 0; i < nvr; i++)
+  {
+    if (vr[i] < FMI_BOOLEAN_VARS)
     {
-        if (vr[i] < FMI_BOOLEAN_VARS)
-        {
-            boolean_vars_[vr[i]] = value[i];
-        }
-        else
-        {
-            return fmi2Error;
-        }
+      boolean_vars_[vr[i]] = value[i];
     }
-    return fmi2OK;
+    else
+    {
+      return fmi2Error;
+    }
+  }
+  return fmi2OK;
 }
 
 fmi2Status OSICheck::SetString(const fmi2ValueReference vr[], size_t nvr, const fmi2String value[])
 {
-    FmiVerboseLog("fmi2SetString(...)");
-    for (size_t i = 0; i < nvr; i++)
+  FmiVerboseLog("fmi2SetString(...)");
+  for (size_t i = 0; i < nvr; i++)
+  {
+    if (vr[i] < FMI_STRING_VARS)
     {
-        if (vr[i] < FMI_STRING_VARS)
-        {
-            string_vars_[vr[i]] = value[i];
-        }
-        else
-        {
-            return fmi2Error;
-        }
+      string_vars_[vr[i]] = value[i];
     }
-    return fmi2OK;
+    else
+    {
+      return fmi2Error;
+    }
+  }
+  return fmi2OK;
 }
 
 /*
@@ -502,18 +586,18 @@ extern "C" {
 
 FMI2_Export const char* fmi2GetTypesPlatform()
 {
-    return fmi2TypesPlatform;
+  return fmi2TypesPlatform;
 }
 
 FMI2_Export const char* fmi2GetVersion()
 {
-    return fmi2Version;
+  return fmi2Version;
 }
 
 FMI2_Export fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean logging_on, size_t n_categories, const fmi2String categories[])
 {
-    auto* myc = (OSICheck*)c;
-    return myc->SetDebugLogging(logging_on, n_categories, categories);
+  auto* myc = (OSICheck*)c;
+  return myc->SetDebugLogging(logging_on, n_categories, categories);
 }
 
 /*
@@ -527,25 +611,25 @@ FMI2_Export fmi2Component fmi2Instantiate(fmi2String instance_name,
                                           fmi2Boolean visible,
                                           fmi2Boolean logging_on)
 {
-    return OSICheck::Instantiate(instance_name, fmu_type, fmu_guid, fmu_resource_location, functions, visible, logging_on);
+  return OSICheck::Instantiate(instance_name, fmu_type, fmu_guid, fmu_resource_location, functions, visible, logging_on);
 }
 
 FMI2_Export fmi2Status
 fmi2SetupExperiment(fmi2Component c, fmi2Boolean tolerance_defined, fmi2Real tolerance, fmi2Real start_time, fmi2Boolean stop_time_defined, fmi2Real stop_time)
 {
-    return fmi2OK;
+  return fmi2OK;
 }
 
 FMI2_Export fmi2Status fmi2EnterInitializationMode(fmi2Component c)
 {
-    auto* myc = (OSICheck*)c;
-    return myc->EnterInitializationMode();
+  auto* myc = (OSICheck*)c;
+  return myc->EnterInitializationMode();
 }
 
 FMI2_Export fmi2Status fmi2ExitInitializationMode(fmi2Component c)
 {
-    auto* myc = (OSICheck*)c;
-    return myc->ExitInitializationMode();
+  auto* myc = (OSICheck*)c;
+  return myc->ExitInitializationMode();
 }
 
 FMI2_Export fmi2Status fmi2DoStep(fmi2Component c,
@@ -553,27 +637,27 @@ FMI2_Export fmi2Status fmi2DoStep(fmi2Component c,
                                   fmi2Real communication_step_size,
                                   fmi2Boolean no_set_fmu_state_prior_to_current_pointfmi2_component)
 {
-    auto* myc = (OSICheck*)c;
-    return myc->DoStep(current_communication_point, communication_step_size, no_set_fmu_state_prior_to_current_pointfmi2_component);
+  auto* myc = (OSICheck*)c;
+  return myc->DoStep(current_communication_point, communication_step_size, no_set_fmu_state_prior_to_current_pointfmi2_component);
 }
 
 FMI2_Export fmi2Status fmi2Terminate(fmi2Component c)
 {
-    auto* myc = (OSICheck*)c;
-    return myc->Terminate();
+  auto* myc = (OSICheck*)c;
+  return myc->Terminate();
 }
 
 FMI2_Export fmi2Status fmi2Reset(fmi2Component c)
 {
-    auto* myc = (OSICheck*)c;
-    return myc->Reset();
+  auto* myc = (OSICheck*)c;
+  return myc->Reset();
 }
 
 FMI2_Export void fmi2FreeInstance(fmi2Component c)
 {
-    auto* myc = (OSICheck*)c;
-    myc->FreeInstance();
-    delete myc;
+  auto* myc = (OSICheck*)c;
+  myc->FreeInstance();
+  delete myc;
 }
 
 /*
@@ -581,50 +665,50 @@ FMI2_Export void fmi2FreeInstance(fmi2Component c)
  */
 FMI2_Export fmi2Status fmi2GetReal(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[])
 {
-    auto* myc = (OSICheck*)c;
-    return myc->GetReal(vr, nvr, value);
+  auto* myc = (OSICheck*)c;
+  return myc->GetReal(vr, nvr, value);
 }
 
 FMI2_Export fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[])
 {
-    auto* myc = (OSICheck*)c;
-    return myc->GetInteger(vr, nvr, value);
+  auto* myc = (OSICheck*)c;
+  return myc->GetInteger(vr, nvr, value);
 }
 
 FMI2_Export fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[])
 {
-    auto* myc = (OSICheck*)c;
-    return myc->GetBoolean(vr, nvr, value);
+  auto* myc = (OSICheck*)c;
+  return myc->GetBoolean(vr, nvr, value);
 }
 
 FMI2_Export fmi2Status fmi2GetString(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[])
 {
-    auto* myc = (OSICheck*)c;
-    return myc->GetString(vr, nvr, value);
+  auto* myc = (OSICheck*)c;
+  return myc->GetString(vr, nvr, value);
 }
 
 FMI2_Export fmi2Status fmi2SetReal(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[])
 {
-    auto* myc = (OSICheck*)c;
-    return myc->SetReal(vr, nvr, value);
+  auto* myc = (OSICheck*)c;
+  return myc->SetReal(vr, nvr, value);
 }
 
 FMI2_Export fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[])
 {
-    auto* myc = (OSICheck*)c;
-    return myc->SetInteger(vr, nvr, value);
+  auto* myc = (OSICheck*)c;
+  return myc->SetInteger(vr, nvr, value);
 }
 
 FMI2_Export fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[])
 {
-    auto* myc = (OSICheck*)c;
-    return myc->SetBoolean(vr, nvr, value);
+  auto* myc = (OSICheck*)c;
+  return myc->SetBoolean(vr, nvr, value);
 }
 
 FMI2_Export fmi2Status fmi2SetString(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[])
 {
-    auto* myc = (OSICheck*)c;
-    return myc->SetString(vr, nvr, value);
+  auto* myc = (OSICheck*)c;
+  return myc->SetString(vr, nvr, value);
 }
 
 /*
@@ -632,32 +716,32 @@ FMI2_Export fmi2Status fmi2SetString(fmi2Component c, const fmi2ValueReference v
  */
 FMI2_Export fmi2Status fmi2GetFMUstate(fmi2Component c, fmi2FMUstate* fmu_state)
 {
-    return fmi2Error;
+  return fmi2Error;
 }
 
 FMI2_Export fmi2Status fmi2SetFMUstate(fmi2Component c, fmi2FMUstate fmu_state)
 {
-    return fmi2Error;
+  return fmi2Error;
 }
 
 FMI2_Export fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* fmu_state)
 {
-    return fmi2Error;
+  return fmi2Error;
 }
 
 FMI2_Export fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate fmu_state, size_t* size)
 {
-    return fmi2Error;
+  return fmi2Error;
 }
 
 FMI2_Export fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate fmu_state, fmi2Byte serialized_state[], size_t size)
 {
-    return fmi2Error;
+  return fmi2Error;
 }
 
 FMI2_Export fmi2Status fmi2DeSerializeFMUstate(fmi2Component c, const fmi2Byte serialized_state[], size_t size, fmi2FMUstate* fmu_state)
 {
-    return fmi2Error;
+  return fmi2Error;
 }
 
 FMI2_Export fmi2Status fmi2GetDirectionalDerivative(fmi2Component c,
@@ -668,46 +752,46 @@ FMI2_Export fmi2Status fmi2GetDirectionalDerivative(fmi2Component c,
                                                     const fmi2Real dv_known[],
                                                     fmi2Real dv_unknown[])
 {
-    return fmi2Error;
+  return fmi2Error;
 }
 
 FMI2_Export fmi2Status fmi2SetRealInputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer order[], const fmi2Real value[])
 {
-    return fmi2Error;
+  return fmi2Error;
 }
 
 FMI2_Export fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer order[], fmi2Real value[])
 {
-    return fmi2Error;
+  return fmi2Error;
 }
 
 FMI2_Export fmi2Status fmi2CancelStep(fmi2Component c)
 {
-    return fmi2OK;
+  return fmi2OK;
 }
 
 FMI2_Export fmi2Status fmi2GetStatus(fmi2Component c, const fmi2StatusKind s, fmi2Status* value)
 {
-    return fmi2Discard;
+  return fmi2Discard;
 }
 
 FMI2_Export fmi2Status fmi2GetRealStatus(fmi2Component c, const fmi2StatusKind s, fmi2Real* value)
 {
-    return fmi2Discard;
+  return fmi2Discard;
 }
 
 FMI2_Export fmi2Status fmi2GetIntegerStatus(fmi2Component c, const fmi2StatusKind s, fmi2Integer* value)
 {
-    return fmi2Discard;
+  return fmi2Discard;
 }
 
 FMI2_Export fmi2Status fmi2GetBooleanStatus(fmi2Component c, const fmi2StatusKind s, fmi2Boolean* value)
 {
-    return fmi2Discard;
+  return fmi2Discard;
 }
 
 FMI2_Export fmi2Status fmi2GetStringStatus(fmi2Component c, const fmi2StatusKind s, fmi2String* value)
 {
-    return fmi2Discard;
+  return fmi2Discard;
 }
 }
