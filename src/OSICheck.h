@@ -220,6 +220,7 @@ protected:
   // string* currentConfigRequestBuffer;
   // string* lastConfigRequestBuffer;
   std::set<string> expected_osi_fields_;
+  std::set<string> missing_fields_;
 
   /* Simple Accessors */
   fmi2Boolean FmiValid()

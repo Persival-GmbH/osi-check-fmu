@@ -172,15 +172,19 @@ fmi2Status OSICheck::DoInit()
 
 fmi2Status OSICheck::DoEnterInitializationMode()
 {
-  expected_osi_fields_.insert("moving_object");
-  expected_osi_fields_.insert("moving_object.base");
-  expected_osi_fields_.insert("moving_object.base.position");
-  expected_osi_fields_.insert("moving_object.base.orientation");
-  expected_osi_fields_.insert("moving_object.base.velocity");
-  expected_osi_fields_.insert("moving_object.base.acceleration");
-  expected_osi_fields_.insert("moving_object.base.orientation_rate");
-  expected_osi_fields_.insert("moving_object.base.orientation_acceleration");
-  expected_osi_fields_.insert("moving_object.base.base_polygon");
+  fstream osi_check_file;
+  osi_check_file.open("/tmp/osi_check.txt",ios::in); //open a file to perform read operation using file object
+  if (osi_check_file.is_open()){   //checking whether the file is open
+    string current_line;
+    while(getline(osi_check_file, current_line)){ //read data from file object and put it into string.
+      expected_osi_fields_.insert(current_line);
+    }
+    osi_check_file.close(); //close the file object.
+  }
+  else
+  {
+    std::cerr << "OSI check file not found!" << std::endl;
+  }
   return fmi2OK;
 }
 
@@ -193,11 +197,9 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
 {
   osi3::SensorData sensor_data_in;
   osi3::SensorData sensor_data_out;
-  double time = current_communication_point + communication_step_size;
-  NormalLog("OSI", "Calculating Sensor at %f for %f (step size %f)", current_communication_point, time, communication_step_size);
+
   if (GetFmiSensorDataIn(sensor_data_in))
   {
-    // TODO: Implement OSI field checks
     if (!sensor_data_in.moving_object().empty() && expected_osi_fields_.find("moving_object") != expected_osi_fields_.end())
     {
       for (const auto& current_check : expected_osi_fields_)
@@ -206,68 +208,64 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
         {
           if (!sensor_data_in.moving_object(0).has_base())
           {
-            std::cerr << "No moving_object.base" << std::endl;
+            missing_fields_.insert(current_check);
           }
         }
         else if (current_check == "moving_object.base.dimension")
         {
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_dimension())
           {
-            std::cerr << "No moving_object.base.dimension" << std::endl;
+            missing_fields_.insert(current_check);
           }
         }
         else if (current_check == "moving_object.base.position")
         {
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_position())
           {
-            std::cerr << "No moving_object.base.position" << std::endl;
+            missing_fields_.insert(current_check);
           }
         }
         else if (current_check == "moving_object.base.orientation")
         {
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_orientation())
           {
-            std::cerr << "No moving_object.base.orientation" << std::endl;
+            missing_fields_.insert(current_check);
           }
         }
         else if (current_check == "moving_object.base.velocity")
         {
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_velocity())
           {
-            std::cerr << "No moving_object.base.velocity" << std::endl;
+            missing_fields_.insert(current_check);
           }
         }
         else if (current_check == "moving_object.base.acceleration")
         {
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_acceleration())
           {
-            std::cerr << "No moving_object.base.acceleration" << std::endl;
+            missing_fields_.insert(current_check);
           }
         }
         else if (current_check == "moving_object.base.orientation_rate")
         {
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_orientation_rate())
           {
-            std::cerr << "No moving_object.base.orientation_rate" << std::endl;
+            missing_fields_.insert(current_check);
           }
         }
         else if (current_check == "moving_object.base.orientation_acceleration")
         {
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_orientation_acceleration())
           {
-            std::cerr << "No moving_object.base.orientation_acceleration" << std::endl;
+            missing_fields_.insert(current_check);
           }
         }
         else if (current_check == "moving_object.base.base_polygon")
         {
           if (sensor_data_in.moving_object(0).has_base() && sensor_data_in.moving_object(0).base().base_polygon().empty())
           {
-            std::cerr << "No moving_object.base.base_polygon" << std::endl;
+            missing_fields_.insert(current_check);
           }
-        }
-        else
-        {
-          std::cerr << "No check for " << current_check << " defined." << std::endl;
         }
       }
     }
@@ -275,7 +273,8 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
     {
       if (expected_osi_fields_.find("moving_object") != expected_osi_fields_.end())
       {
-        std::cerr << "No moving objects in sensor data" << std::endl;
+        missing_fields_.insert("moving_object");
+        std::cout << "test at " << current_communication_point << std::endl;
       }
     }
 
@@ -420,6 +419,19 @@ fmi2Status OSICheck::DoStep(fmi2Real current_communication_point, fmi2Real commu
 fmi2Status OSICheck::Terminate()
 {
   FmiVerboseLog("fmi2Terminate()");
+  if (missing_fields_.empty()) {
+    std::cout << "No missing fields" << std::endl;
+  }
+  else
+  {
+    std::cout << "----------------------------------- " << std::endl;
+    std::cout << "Missing fields: " << std::endl;
+    for (const auto& current_missing_field : missing_fields_)
+    {
+      std::cout << current_missing_field << std::endl;
+    }
+    std::cout << "----------------------------------- " << std::endl;
+  }
   return DoTerm();
 }
 
