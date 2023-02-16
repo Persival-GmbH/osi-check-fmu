@@ -419,19 +419,36 @@ fmi2Status OSICheck::DoStep(fmi2Real current_communication_point, fmi2Real commu
 fmi2Status OSICheck::Terminate()
 {
   FmiVerboseLog("fmi2Terminate()");
+
+  fstream output_file;
+  output_file.open("/tmp/missing_osi_fields.txt", ios::out);  // open a file to perform write operation using file object
+
   if (missing_fields_.empty()) {
     std::cout << "No missing fields" << std::endl;
+    if(output_file.is_open()) //checking whether the file is open
+    {
+      output_file << "No missing fields \n";   //inserting text
+    }
   }
   else
   {
     std::cout << "----------------------------------- " << std::endl;
     std::cout << "Missing fields: " << std::endl;
+    if(output_file.is_open()) //checking whether the file is open
+    {
+      output_file << "Missing fields: \n";   //inserting text
+    }
     for (const auto& current_missing_field : missing_fields_)
     {
       std::cout << current_missing_field << std::endl;
+      if(output_file.is_open()) //checking whether the file is open
+      {
+        output_file << current_missing_field << "\n";   //inserting text
+      }
     }
     std::cout << "----------------------------------- " << std::endl;
   }
+  output_file.close();
   return DoTerm();
 }
 
