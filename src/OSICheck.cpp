@@ -428,7 +428,6 @@ fmi2Status OSICheck::Terminate() {
     }
   }
   string output = "echo \"num_missing_fields=" + to_string(num_missing_fields) + "\" >> $GITHUB_OUTPUT";
-  std::cout << output.c_str() << std::endl;
   system(output.c_str());
   return DoTerm();
 }
