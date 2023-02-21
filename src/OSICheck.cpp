@@ -421,7 +421,7 @@ fmi2Status OSICheck::Terminate() {
 
   if (!missing_fields_.empty()) {
     std::cout << "----------------------------------- " << std::endl;
-    std::cout << "\"missing_fields=true\" >> $GITHUB_OUTPUT";
+    std::cout << "\"missing_fields=true\" >> $GITHUB_OUTPUT" << std::endl;
     for (const auto &current_missing_field : missing_fields_) {
       std::cout << "::error title=MissingField::" << current_missing_field << std::endl;
     }
