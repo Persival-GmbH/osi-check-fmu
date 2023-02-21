@@ -198,7 +198,7 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
   osi3::SensorData sensor_data_in;
   osi3::SensorData sensor_data_out;
 
-  if (GetFmiSensorDataIn(sensor_data_in))
+  if (GetFmiSensorDataIn(sensor_data_in) && current_communication_point > 0.5) //start checker after 0.5 s to give simulation models time to settle
   {
     if (!sensor_data_in.moving_object().empty() && expected_osi_fields_.find("moving_object") != expected_osi_fields_.end())
     {
