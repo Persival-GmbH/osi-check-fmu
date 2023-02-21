@@ -416,36 +416,21 @@ fmi2Status OSICheck::DoStep(fmi2Real current_communication_point, fmi2Real commu
   return DoCalc(current_communication_point, communication_step_size);
 }
 
-fmi2Status OSICheck::Terminate()
-{
+fmi2Status OSICheck::Terminate() {
   FmiVerboseLog("fmi2Terminate()");
 
-  fstream output_file;
-  output_file.open("/tmp/missing_osi_fields.txt", ios::out);  // open a file to perform write operation using file object
-
-  if (missing_fields_.empty()) {
-    std::cout << "No missing fields" << std::endl;
-    if(output_file.is_open()) //checking whether the file is open
-    {
-      output_file << "No missing fields \n";   //inserting text
+  if (!missing_fields_.empty()) {
+    std::cout << "----------------------------------- " << std::endl;
+    std::cout << "\"missing_fields=true\" >> $GITHUB_OUTPUT";
+    for (const auto &current_missing_field : missing_fields_) {
+      std::cout << "::error title=MissingField::" << current_missing_field << std::endl;
     }
+
+    std::cout << "----------------------------------- " << std::endl;
   }
   else {
-    std::cout << "----------------------------------- " << std::endl;
-    if (output_file.is_open()) //checking whether the file is open
-    {
-      for (const auto &current_missing_field : missing_fields_) {
-        std::cout << "::error title=MissingField::" << current_missing_field << std::endl;
-        if (output_file.is_open()) //checking whether the file is open
-        {
-          output_file << current_missing_field << "\n";   //inserting text
-        }
-      }
-    }
-    std::cout << "----------------------------------- " << std::endl;
-
+    std::cout << "\"missing_fields=false\" >> $GITHUB_OUTPUT";
   }
-  output_file.close();
   return DoTerm();
 }
 
