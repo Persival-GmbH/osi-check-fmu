@@ -209,6 +209,7 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
           if (!sensor_data_in.moving_object(0).has_base())
           {
             missing_fields_.insert(current_check);
+            std::cout << current_communication_point << ": missing " << current_check << std::endl;
           }
         }
         else if (current_check == "moving_object.base.dimension")
@@ -216,6 +217,7 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_dimension())
           {
             missing_fields_.insert(current_check);
+            std::cout << current_communication_point << ": missing " << current_check << std::endl;
           }
         }
         else if (current_check == "moving_object.base.position")
@@ -223,6 +225,7 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_position())
           {
             missing_fields_.insert(current_check);
+            std::cout << current_communication_point << ": missing " << current_check << std::endl;
           }
         }
         else if (current_check == "moving_object.base.orientation")
@@ -230,6 +233,7 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_orientation())
           {
             missing_fields_.insert(current_check);
+            std::cout << current_communication_point << ": missing " << current_check << std::endl;
           }
         }
         else if (current_check == "moving_object.base.velocity")
@@ -237,6 +241,7 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_velocity())
           {
             missing_fields_.insert(current_check);
+            std::cout << current_communication_point << ": missing " << current_check << std::endl;
           }
         }
         else if (current_check == "moving_object.base.acceleration")
@@ -244,6 +249,7 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_acceleration())
           {
             missing_fields_.insert(current_check);
+            std::cout << current_communication_point << ": missing " << current_check << std::endl;
           }
         }
         else if (current_check == "moving_object.base.orientation_rate")
@@ -251,6 +257,7 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_orientation_rate())
           {
             missing_fields_.insert(current_check);
+            std::cout << current_communication_point << ": missing " << current_check << std::endl;
           }
         }
         else if (current_check == "moving_object.base.orientation_acceleration")
@@ -258,6 +265,7 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
           if (sensor_data_in.moving_object(0).has_base() && !sensor_data_in.moving_object(0).base().has_orientation_acceleration())
           {
             missing_fields_.insert(current_check);
+            std::cout << current_communication_point << ": missing " << current_check << std::endl;
           }
         }
         else if (current_check == "moving_object.base.base_polygon")
@@ -265,6 +273,7 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
           if (sensor_data_in.moving_object(0).has_base() && sensor_data_in.moving_object(0).base().base_polygon().empty())
           {
             missing_fields_.insert(current_check);
+            std::cout << current_communication_point << ": missing " << current_check << std::endl;
           }
         }
       }
@@ -274,7 +283,7 @@ fmi2Status OSICheck::DoCalc(fmi2Real current_communication_point, fmi2Real commu
       if (expected_osi_fields_.find("moving_object") != expected_osi_fields_.end())
       {
         missing_fields_.insert("moving_object");
-        std::cout << "test at " << current_communication_point << std::endl;
+        std::cout << current_communication_point << ": missing moving_object" << std::endl;
       }
     }
 
