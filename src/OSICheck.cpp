@@ -430,23 +430,20 @@ fmi2Status OSICheck::Terminate()
       output_file << "No missing fields \n";   //inserting text
     }
   }
-  else
-  {
+  else {
     std::cout << "----------------------------------- " << std::endl;
-    std::cout << "Missing fields: " << std::endl;
-    if(output_file.is_open()) //checking whether the file is open
+    if (output_file.is_open()) //checking whether the file is open
     {
-      output_file << "Missing fields: \n";   //inserting text
-    }
-    for (const auto& current_missing_field : missing_fields_)
-    {
-      std::cout << current_missing_field << std::endl;
-      if(output_file.is_open()) //checking whether the file is open
-      {
-        output_file << current_missing_field << "\n";   //inserting text
+      for (const auto &current_missing_field : missing_fields_) {
+        std::cout << "::error title=MissingField::" << current_missing_field << std::endl;
+        if (output_file.is_open()) //checking whether the file is open
+        {
+          output_file << current_missing_field << "\n";   //inserting text
+        }
       }
     }
     std::cout << "----------------------------------- " << std::endl;
+
   }
   output_file.close();
   return DoTerm();
