@@ -420,13 +420,14 @@ fmi2Status OSICheck::Terminate() {
   FmiVerboseLog("fmi2Terminate()");
 
   if (!missing_fields_.empty()) {
-    std::cout << "::set-output name=missing_fields::true" << std::endl;
+    system("echo \"missing_fields=true\" >> $GITHUB_OUTPUT");
+    //std::cout << "::set-output name=missing_fields::true" << std::endl;
     for (const auto &current_missing_field : missing_fields_) {
       std::cout << "::error title=MissingField::" << current_missing_field << std::endl;
     }
   }
   else {
-    std::cout << "::set-output name=missing_fields::false" << std::endl;
+    //std::cout << "::set-output name=missing_fields::false" << std::endl;
   }
   return DoTerm();
 }
