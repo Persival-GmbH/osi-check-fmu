@@ -419,16 +419,16 @@ fmi2Status OSICheck::DoStep(fmi2Real current_communication_point, fmi2Real commu
 fmi2Status OSICheck::Terminate() {
   FmiVerboseLog("fmi2Terminate()");
 
+  int num_missing_fields = 0;
+
   if (!missing_fields_.empty()) {
-    system("echo \"missing_fields=true\" >> $GITHUB_OUTPUT");
-    //std::cout << "::set-output name=missing_fields::true" << std::endl;
     for (const auto &current_missing_field : missing_fields_) {
       std::cout << "::error title=MissingField::" << current_missing_field << std::endl;
+      num_missing_fields++;
     }
   }
-  else {
-    //std::cout << "::set-output name=missing_fields::false" << std::endl;
-  }
+  string output = "echo \"missing_fields=" + to_string(num_missing_fields) + "\" >> $GITHUB_OUTPUT";
+  system(output.c_str());
   return DoTerm();
 }
 
